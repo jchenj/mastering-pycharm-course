@@ -9,21 +9,38 @@ episode_data = {}
 
 
 def main():
-    # SHOW THE HEADER
-    print("Welcome to the talk python info downloader.")
-    print()
+    show_header()
+    download_data()
+    latest_show_id = get_latest_show_id()
+    print("Working with total of {} episodes".format(latest_show_id))
+    display_results()
 
-    # DOWNLOAD THE EPISODE DATA
+
+def display_results():
+    start = random.randint(90, 110)
+    latest_id = get_latest_show_id()
+    end = random.randint(130, latest_id + 1)
+    for show_id in range(start, end):
+        info = get_episode(show_id)
+        print("{}. {}".format(info.show_id, info.title))
+
+
+def get_episode(show_id):
+    return episode_data.get(show_id)
+
+
+def get_latest_show_id():
+    return max(episode_data.keys())
+
+
+def download_data():
     url = 'https://talkpython.fm/episodes/rss'
-
     resp = requests.get(url)
     resp.raise_for_status()
-
     dom = ElementTree.fromstring(resp.text)
-
-    episode_count = len(dom.findall('channel/item'))
-
-    for idx, item in enumerate(dom.findall('channel/item')):
+    items = dom.findall('channel/item')
+    episode_count = len(items)
+    for idx, item in enumerate(items):
         episode = Episode(
             item.find('title').text,
             item.find('link').text,
@@ -32,20 +49,10 @@ def main():
         )
         episode_data[episode.show_id] = episode
 
-    # GET LATEST SHOW ID
-    latest_show_id = max(episode_data.keys())
 
-    print("Working with total of {} episodes".format(latest_show_id))
-
-    # DISPLAY RESULTS
-    start = random.randint(90, 110)
-    latest_id = max(episode_data.keys())
-    end = random.randint(130, latest_id + 1)
-
-    for show_id in range(start, end):
-        # GET EPISODE
-        info = episode_data.get(show_id)
-        print("{}. {}".format(info.show_id, info.title))
+def show_header():
+    print("Welcome to the talk python info downloader.")
+    print()
 
 
 if __name__ == '__main__':
